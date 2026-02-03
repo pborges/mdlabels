@@ -177,4 +177,4 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          script: dokku git:from-image mdlabels ghcr.io/pborges/mdlabels:latest
+          script: git:from-image mdlabels ghcr.io/pborges/mdlabels:latest
