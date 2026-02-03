@@ -95,7 +95,7 @@ Then open http://localhost:8080 in your browser.
 
 ### Build from Source
 
-Requires Go 1.21+ and Node.js 20+.
+Requires Go 1.21+ and Deno 2.0+.
 
 ```bash
 # Clone the repository
@@ -104,8 +104,8 @@ cd mdlabels
 
 # Build frontend
 cd mdlabels-ui
-npm install
-npm run build
+deno install
+deno task build
 cd ..
 
 # Build Go binary
@@ -136,8 +136,8 @@ MODE=dev go run cmd/mdlabel-web/main.go
 ### Frontend (SolidJS)
 ```bash
 cd mdlabels-ui
-npm install
-npm run dev
+deno install
+deno task dev
 ```
 
 The frontend dev server runs on http://localhost:5173 and proxies API calls to the Go backend on port 8080.

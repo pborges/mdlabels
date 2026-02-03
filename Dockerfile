@@ -1,21 +1,19 @@
 # Stage 1: Build the frontend
-FROM node:20-slim AS frontend-builder
+FROM denoland/deno:latest AS frontend-builder
 
 WORKDIR /build
 
-# Copy VERSION and CHANGELOG files
+# Copy VERSION file
 COPY VERSION ./
-COPY CHANGELOG.md ./public/CHANGELOG.md
-COPY mdlabels-ui/package.json mdlabels-ui/package-lock.json* ./
-
-# Install dependencies
-RUN npm install
 
 # Copy frontend source
 COPY mdlabels-ui/ ./
 
-# Build the frontend with version from file
-RUN export VITE_APP_VERSION=$(cat VERSION) && npm run build
+# Copy CHANGELOG to public folder (after copying frontend source)
+COPY CHANGELOG.md ./public/CHANGELOG.md
+
+# Install dependencies and build the frontend with version from file
+RUN deno install && VITE_APP_VERSION=$(cat VERSION) deno task build
 
 # Stage 2: Build the Go binary
 FROM golang:1.21-alpine AS go-builder

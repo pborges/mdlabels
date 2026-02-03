@@ -66,25 +66,28 @@ go build -o mdlabel-web cmd/mdlabel-web/main.go
 cd mdlabels-ui
 
 # Install dependencies
-npm install
+deno install
 
 # Run Vite dev server (proxies /api to localhost:8080)
-npm run dev
+deno task dev
 
 # Build for production (outputs to dist/)
-npm run build
+deno task build
 
 # Preview production build
-npm run preview
+deno task preview
+
+# Type check
+deno task check
 ```
 
 ### Full Development Workflow
 1. Start backend in dev mode: `MODE=dev go run cmd/mdlabel-web/main.go`
-2. In separate terminal, start frontend: `cd mdlabels-ui && npm run dev`
+2. In separate terminal, start frontend: `cd mdlabels-ui && deno task dev`
 3. Frontend runs on http://localhost:5173, API calls proxied to :8080
 
 ### Production Build
-1. Build frontend: `cd mdlabels-ui && npm run build`
+1. Build frontend: `cd mdlabels-ui && deno task build`
 2. Build Go binary: `go build -o mdlabel-web cmd/mdlabel-web/main.go`
 3. Run binary: `./mdlabel-web` (serves on port 8080 or $PORT)
 
@@ -96,7 +99,7 @@ npm run preview
 - User-Agent header includes app URL and contact email per MusicBrainz requirements
 
 ### Asset Embedding
-- Frontend must be built first (`npm run build`) before building Go binary
+- Frontend must be built first (`deno task build`) before building Go binary
 - `assets.go` embeds `mdlabels-ui/dist` directory
 - In development mode, backend returns 404 for static files (frontend on Vite)
 
