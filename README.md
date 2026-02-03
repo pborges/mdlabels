@@ -8,6 +8,8 @@
 
 A simple web app to create labels for minidiscs.
 
+See it live! [https://mdlabels.incursion.dev](https://mdlabels.incursion.dev)
+
 ## User interface
 - The UI presents a grid of 5x4 labels (representing a single printable page), and allows the user to edit the labels.
 
