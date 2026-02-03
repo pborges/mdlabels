@@ -1,0 +1,24 @@
+{
+  "name": "mdlabels",
+  "description": "MD Labels creation service",
+  "healthchecks": {
+    "web": [
+      {
+        "type": "listening",
+        "name": "port-check",
+        "attempts": 3,
+        "timeout": 5,
+        "wait": 5
+      },
+      {
+        "type": "startup",
+        "name": "health-endpoint-check",
+        "description": "Checks if the health endpoint is responding",
+        "path": "/health",
+        "attempts": 3,
+        "timeout": 5,
+        "wait": 10
+      }
+    ]
+  }
+}

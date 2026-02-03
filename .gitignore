@@ -1,0 +1,14 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor
+go.work
+out
+.idea
+.DS_Store
+
+cmd/mdl

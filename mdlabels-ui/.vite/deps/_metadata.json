@@ -1,0 +1,67 @@
+{
+  "hash": "c37a5964",
+  "configHash": "31c5b575",
+  "lockfileHash": "e3b0c442",
+  "browserHash": "ebd96f27",
+  "optimized": {
+    "solid-js": {
+      "src": "../../node_modules/.deno/solid-js@1.9.11/node_modules/solid-js/dist/dev.js",
+      "file": "solid-js.js",
+      "fileHash": "4cd98fda",
+      "needsInterop": false
+    },
+    "solid-js/web": {
+      "src": "../../node_modules/.deno/solid-js@1.9.11/node_modules/solid-js/web/dist/dev.js",
+      "file": "solid-js_web.js",
+      "fileHash": "654591ef",
+      "needsInterop": false
+    },
+    "solid-js/store": {
+      "src": "../../node_modules/.deno/solid-js@1.9.11/node_modules/solid-js/store/dist/dev.js",
+      "file": "solid-js_store.js",
+      "fileHash": "54607e56",
+      "needsInterop": false
+    },
+    "solid-js/html": {
+      "src": "../../node_modules/.deno/solid-js@1.9.11/node_modules/solid-js/html/dist/html.js",
+      "file": "solid-js_html.js",
+      "fileHash": "23ea0e40",
+      "needsInterop": false
+    },
+    "solid-js/h": {
+      "src": "../../node_modules/.deno/solid-js@1.9.11/node_modules/solid-js/h/dist/h.js",
+      "file": "solid-js_h.js",
+      "fileHash": "5c2d0929",
+      "needsInterop": false
+    },
+    "jspdf": {
+      "src": "../../node_modules/.deno/jspdf@4.1.0/node_modules/jspdf/dist/jspdf.es.min.js",
+      "file": "jspdf.js",
+      "fileHash": "fae2b5db",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "index.es-GIIP2IDQ": {
+      "file": "index__es-GIIP2IDQ.js"
+    },
+    "chunk-BBCTEIQI": {
+      "file": "chunk-BBCTEIQI.js"
+    },
+    "chunk-5RRQFNVS": {
+      "file": "chunk-5RRQFNVS.js"
+    },
+    "chunk-GNCFRVPA": {
+      "file": "chunk-GNCFRVPA.js"
+    },
+    "html2canvas.esm-LZCYKLOZ": {
+      "file": "html2canvas__esm-LZCYKLOZ.js"
+    },
+    "purify.es-FD2YCRZJ": {
+      "file": "purify__es-FD2YCRZJ.js"
+    },
+    "chunk-5WRI5ZAA": {
+      "file": "chunk-5WRI5ZAA.js"
+    }
+  }
+}

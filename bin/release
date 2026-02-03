@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+
+cd "$(dirname "$0")/.."
+
+# Read version from VERSION file
+VERSION=$(cat VERSION | tr -d '[:space:]')
+
+if [ -z "$VERSION" ]; then
+  echo "Error: VERSION file is empty"
+  exit 1
+fi
+
+TAG="v${VERSION}"
+
+# Check if tag already exists
+if git rev-parse "$TAG" >/dev/null 2>&1; then
+  echo "Error: Tag $TAG already exists"
+  exit 1
+fi
+
+# Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Error: You have uncommitted changes. Commit them first."
+  exit 1
+fi
+
+# Check if CHANGELOG.md has an entry for this version
+if ! grep -q "## \[${VERSION}\]" CHANGELOG.md; then
+  echo "Warning: No CHANGELOG.md entry found for version ${VERSION}"
+  read -p "Continue anyway? [y/N] " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+fi
+
+echo "Releasing $TAG..."
+
+# Create and push tag
+git tag "$TAG"
+git push origin main --tags
+
+echo ""
+echo "Done! GitHub Actions will now build and publish the release."
+echo "Watch progress at: https://github.com/pborges/mdlabels/actions"
