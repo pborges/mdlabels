@@ -248,20 +248,18 @@ export default function LabelEditor() {
     on(
       [artist, album, year, artworkData, zoom, panX, panY, blackBackground, showInsertThisEnd],
       () => {
-        const artistVal = artist();
-        const albumVal = album();
-        const yearVal = year();
         const artworkVal = artworkData();
 
-        if (!previewCanvasRef || !artistVal || !albumVal || !yearVal || !artworkVal) {
+        // Only require artwork to render preview
+        if (!previewCanvasRef || !artworkVal) {
           return;
         }
 
         const previewLabel: Label = {
           id: 'preview',
-          artist: artistVal,
-          album: albumVal,
-          year: yearVal,
+          artist: artist(),
+          album: album(),
+          year: year(),
           mbid: mbid() || 'preview',
           artworkData: artworkVal,
           transform: {
@@ -314,8 +312,8 @@ export default function LabelEditor() {
                     onChange={handleFileSelect}
                   />
 
-                  {/* Placeholder when no preview */}
-                  <Show when={!(artist() && album() && year() && artworkData())}>
+                  {/* Placeholder when no artwork */}
+                  <Show when={!artworkData()}>
                     <div
                       class={`text-gray-500 text-center border-2 border-dashed rounded-lg p-6 md:p-8 cursor-pointer hover:border-blue-400 hover:bg-gray-50 transition-colors ${
                         isDragging() ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
@@ -328,10 +326,10 @@ export default function LabelEditor() {
                     </div>
                   </Show>
 
-                  {/* Canvas preview - always rendered but hidden when not ready */}
+                  {/* Canvas preview - shown when artwork exists */}
                   <div
                     class="relative"
-                    style={{ display: artist() && album() && year() && artworkData() ? 'block' : 'none' }}
+                    style={{ display: artworkData() ? 'block' : 'none' }}
                   >
                     {/* Clear image button */}
                     <button
