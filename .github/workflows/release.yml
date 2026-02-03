@@ -166,3 +166,15 @@ jobs:
             docker run -p 8080:80 ghcr.io/pborges/mdlabels:${{ steps.version.outputs.VERSION }}
             ```
           files: release-assets/*
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [create-release]
+    steps:
+      - name: Deploy to Dokku
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: dokku git:from-image mdlabels ghcr.io/pborges/mdlabels:latest
