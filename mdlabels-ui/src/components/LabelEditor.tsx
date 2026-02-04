@@ -1,6 +1,6 @@
 import { Show, createSignal, createEffect, on } from 'solid-js';
-import { isEditing, closeEditor, editingLabelIndex, pages, currentPageIndex, updateLabel, blackBackground, showInsertThisEnd } from '../store/labels';
-import type { Label } from '../types/label';
+import { isEditing, closeEditor, editingLabelIndex, pages, currentPageIndex, updateLabel, blackBackground, showInsertThisEnd, labelTemplate, cleanBgColor, cleanTextColor } from '../store/labels';
+import type { Label, LabelConfig } from '../types/label';
 import { searchMusicBrainz, getArtworkBase64 } from '../lib/api-client';
 import type { MBRelease } from '../types/api';
 import { renderer } from '../lib/canvas-renderer';
@@ -38,6 +38,12 @@ export default function LabelEditor() {
   const [panX, setPanX] = createSignal(0);
   const [panY, setPanY] = createSignal(0);
 
+  // Per-label config overrides (empty string = use global)
+  const [labelConfigTemplate, setLabelConfigTemplate] = createSignal<string>('');
+  const [labelConfigBgColor, setLabelConfigBgColor] = createSignal<string>('');
+  const [labelConfigTextColor, setLabelConfigTextColor] = createSignal<string>('');
+  const [labelConfigShowInsert, setLabelConfigShowInsert] = createSignal<string>('');
+
   // Load existing label data when editor opens
   createEffect(() => {
     if (isEditing() && editingLabelIndex() !== null) {
@@ -59,6 +65,11 @@ export default function LabelEditor() {
         setZoom(currentLabel.transform.zoom);
         setPanX(currentLabel.transform.panX);
         setPanY(currentLabel.transform.panY);
+        // Load per-label config overrides
+        setLabelConfigTemplate(currentLabel.config?.labelTemplate ?? '');
+        setLabelConfigBgColor(currentLabel.config?.cleanBgColor ?? '');
+        setLabelConfigTextColor(currentLabel.config?.cleanTextColor ?? '');
+        setLabelConfigShowInsert(currentLabel.config?.showInsertThisEnd !== undefined ? (currentLabel.config.showInsertThisEnd ? 'true' : 'false') : '');
       } else {
         // Reset for new label
         setArtist('');
@@ -69,6 +80,10 @@ export default function LabelEditor() {
         setZoom(1);
         setPanX(0);
         setPanY(0);
+        setLabelConfigTemplate('');
+        setLabelConfigBgColor('');
+        setLabelConfigTextColor('');
+        setLabelConfigShowInsert('');
       }
     }
   });
@@ -211,6 +226,13 @@ export default function LabelEditor() {
     // Generate mbid if not set (for custom artwork)
     const labelMbid = mbid() || 'custom-' + crypto.randomUUID();
 
+    // Build per-label config (only include fields that are set)
+    const config: LabelConfig = {};
+    if (labelConfigTemplate()) config.labelTemplate = labelConfigTemplate() as 'original' | 'clean';
+    if (labelConfigBgColor()) config.cleanBgColor = labelConfigBgColor();
+    if (labelConfigTextColor()) config.cleanTextColor = labelConfigTextColor();
+    if (labelConfigShowInsert()) config.showInsertThisEnd = labelConfigShowInsert() === 'true';
+
     const newLabel: Label = {
       id: crypto.randomUUID(),
       artist: artist(),
@@ -222,7 +244,8 @@ export default function LabelEditor() {
         zoom: zoom(),
         panX: panX(),
         panY: panY()
-      }
+      },
+      ...(Object.keys(config).length > 0 ? { config } : {})
     };
 
     updateLabel(currentPageIndex(), editingLabelIndex()!, newLabel);
@@ -243,10 +266,16 @@ export default function LabelEditor() {
     return `https://coverartarchive.org/release/${mbid}/front-250`;
   };
 
+  // Resolve effective config values: per-label override or global default
+  const effectiveTemplate = () => (labelConfigTemplate() || labelTemplate()) as 'original' | 'clean';
+  const effectiveBgColor = () => labelConfigBgColor() || cleanBgColor();
+  const effectiveTextColor = () => labelConfigTextColor() || cleanTextColor();
+  const effectiveShowInsert = () => labelConfigShowInsert() ? labelConfigShowInsert() === 'true' : showInsertThisEnd();
+
   // Update preview when any value changes
   createEffect(
     on(
-      [artist, album, year, artworkData, zoom, panX, panY, blackBackground, showInsertThisEnd],
+      [isEditing, artist, album, year, artworkData, zoom, panX, panY, blackBackground, showInsertThisEnd, labelTemplate, cleanBgColor, cleanTextColor, labelConfigTemplate, labelConfigBgColor, labelConfigTextColor, labelConfigShowInsert],
       () => {
         const artworkVal = artworkData();
 
@@ -269,7 +298,7 @@ export default function LabelEditor() {
           }
         };
 
-        renderer.renderLabel(previewLabel, previewCanvasRef, blackBackground(), showInsertThisEnd())
+        renderer.renderLabel(previewLabel, previewCanvasRef, blackBackground(), effectiveShowInsert(), effectiveTemplate(), effectiveBgColor(), effectiveTextColor())
           .catch((error) => console.error('Failed to render preview:', error));
       }
     )
@@ -512,6 +541,98 @@ export default function LabelEditor() {
                         class="w-full px-2 py-1 md:px-4 md:py-2 text-xs md:text-base border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Per-Label Configuration */}
+                <div class="mb-3 md:mb-6">
+                  <div class="flex items-center justify-between mb-2 md:mb-3">
+                    <h3 class="text-base md:text-lg font-semibold">Label Configuration</h3>
+                    <Show when={labelConfigTemplate() || labelConfigBgColor() || labelConfigTextColor() || labelConfigShowInsert()}>
+                      <button
+                        onClick={() => {
+                          setLabelConfigTemplate('');
+                          setLabelConfigBgColor('');
+                          setLabelConfigTextColor('');
+                          setLabelConfigShowInsert('');
+                        }}
+                        class="px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                      >
+                        Clear Individual Config
+                      </button>
+                    </Show>
+                  </div>
+                  <div class="space-y-2 md:space-y-3">
+                    <div>
+                      <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Template</label>
+                      <select
+                        value={labelConfigTemplate()}
+                        onChange={(e) => setLabelConfigTemplate(e.currentTarget.value)}
+                        class="w-full px-2 py-1 md:px-4 md:py-2 text-xs md:text-base border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Use Global ({labelTemplate() === 'original' ? 'Original' : 'Clean'})</option>
+                        <option value="original">Original</option>
+                        <option value="clean">Clean</option>
+                      </select>
+                    </div>
+
+                    <Show when={effectiveTemplate() === 'clean'}>
+                      <div class="flex gap-2 md:gap-4">
+                        <div class="flex-1">
+                          <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                          <div class="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={labelConfigBgColor() || cleanBgColor()}
+                              onInput={(e) => setLabelConfigBgColor(e.currentTarget.value)}
+                              class="w-8 h-8 cursor-pointer border-0 p-0"
+                            />
+                            <Show when={labelConfigBgColor()}>
+                              <button
+                                onClick={() => setLabelConfigBgColor('')}
+                                class="text-xs text-gray-500 hover:text-gray-700 underline"
+                              >
+                                Use Global
+                              </button>
+                            </Show>
+                          </div>
+                        </div>
+                        <div class="flex-1">
+                          <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Text Color</label>
+                          <div class="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={labelConfigTextColor() || cleanTextColor()}
+                              onInput={(e) => setLabelConfigTextColor(e.currentTarget.value)}
+                              class="w-8 h-8 cursor-pointer border-0 p-0"
+                            />
+                            <Show when={labelConfigTextColor()}>
+                              <button
+                                onClick={() => setLabelConfigTextColor('')}
+                                class="text-xs text-gray-500 hover:text-gray-700 underline"
+                              >
+                                Use Global
+                              </button>
+                            </Show>
+                          </div>
+                        </div>
+                      </div>
+                    </Show>
+
+                    <Show when={effectiveTemplate() === 'original'}>
+                      <div>
+                        <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">INSERT THIS END</label>
+                        <select
+                          value={labelConfigShowInsert()}
+                          onChange={(e) => setLabelConfigShowInsert(e.currentTarget.value)}
+                          class="w-full px-2 py-1 md:px-4 md:py-2 text-xs md:text-base border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Use Global ({showInsertThisEnd() ? 'Shown' : 'Hidden'})</option>
+                          <option value="true">Show</option>
+                          <option value="false">Hide</option>
+                        </select>
+                      </div>
+                    </Show>
                   </div>
                 </div>
               </div>

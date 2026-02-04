@@ -4,6 +4,13 @@ export interface LabelTransform {
   panY: number;  // pixels
 }
 
+export interface LabelConfig {
+  labelTemplate?: 'original' | 'clean';
+  cleanBgColor?: string;
+  cleanTextColor?: string;
+  showInsertThisEnd?: boolean;
+}
+
 export interface Label {
   id: string;
   artist: string;
@@ -12,6 +19,7 @@ export interface Label {
   mbid: string;
   artworkData: string; // Base64 data URL of the artwork image
   transform: LabelTransform;
+  config?: LabelConfig;
 }
 
 export interface Page {

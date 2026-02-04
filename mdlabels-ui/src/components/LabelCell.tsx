@@ -1,7 +1,7 @@
 import { createEffect } from 'solid-js';
 import type { Label } from '../types/label';
 import { renderer } from '../lib/canvas-renderer';
-import { blackBackground, showInsertThisEnd } from '../store/labels';
+import { blackBackground, showInsertThisEnd, labelTemplate, cleanBgColor, cleanTextColor } from '../store/labels';
 
 interface LabelCellProps {
   label: Label | null;
@@ -14,7 +14,11 @@ export default function LabelCell(props: LabelCellProps) {
   createEffect(async () => {
     if (canvasRef && props.label) {
       try {
-        await renderer.renderLabel(props.label, canvasRef, blackBackground(), showInsertThisEnd());
+        const effTemplate = (props.label.config?.labelTemplate ?? labelTemplate()) as 'original' | 'clean';
+        const effBgColor = props.label.config?.cleanBgColor ?? cleanBgColor();
+        const effTextColor = props.label.config?.cleanTextColor ?? cleanTextColor();
+        const effShowInsert = props.label.config?.showInsertThisEnd ?? showInsertThisEnd();
+        await renderer.renderLabel(props.label, canvasRef, blackBackground(), effShowInsert, effTemplate, effBgColor, effTextColor);
       } catch (error) {
         console.error('Error rendering label:', error);
       }

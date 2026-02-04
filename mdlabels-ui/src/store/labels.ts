@@ -19,7 +19,10 @@ const initialPages = loadFromStorage() || [createEmptyPage()];
 const initialConfig = loadConfigFromStorage() || {
   blackBackground: false,
   showInsertThisEnd: true,
-  paperSize: 'letter' as const
+  paperSize: 'letter' as const,
+  labelTemplate: 'original' as const,
+  cleanBgColor: '#000000',
+  cleanTextColor: '#ffffff'
 };
 
 export const [pages, setPages] = createStore<Page[]>(initialPages);
@@ -33,6 +36,9 @@ export const [editingLabelIndex, setEditingLabelIndex] = createSignal<number | n
 export const [blackBackground, setBlackBackground] = createSignal(initialConfig.blackBackground);
 export const [paperSize, setPaperSize] = createSignal<'letter' | 'a4'>(initialConfig.paperSize);
 export const [showInsertThisEnd, setShowInsertThisEnd] = createSignal(initialConfig.showInsertThisEnd);
+export const [labelTemplate, setLabelTemplate] = createSignal<'original' | 'clean'>(initialConfig.labelTemplate ?? 'original');
+export const [cleanBgColor, setCleanBgColor] = createSignal(initialConfig.cleanBgColor ?? '#000000');
+export const [cleanTextColor, setCleanTextColor] = createSignal(initialConfig.cleanTextColor ?? '#ffffff');
 
 // Actions
 export function addPage() {
@@ -97,6 +103,9 @@ createEffect(() => {
   saveConfigToStorage({
     blackBackground: blackBackground(),
     showInsertThisEnd: showInsertThisEnd(),
-    paperSize: paperSize()
+    paperSize: paperSize(),
+    labelTemplate: labelTemplate(),
+    cleanBgColor: cleanBgColor(),
+    cleanTextColor: cleanTextColor()
   });
 });

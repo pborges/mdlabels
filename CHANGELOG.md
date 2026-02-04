@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - Unreleased
+
+### Added
+- New "Clean" label template with no top banner, rounded corners, and a larger bottom text area
+- Customizable background and text colors for the Clean template via color pickers
+- Per-label configuration overrides allowing individual labels to use different templates and colors than the global defaults
+- Label Configuration section in the editor with options to override global settings on a per-label basis
+
 ## [1.0.6] - 2-2-2026
 - Test release for auto deploy to Dokku
 

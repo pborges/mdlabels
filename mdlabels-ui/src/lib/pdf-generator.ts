@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import type { Page } from '../types/label';
 import { renderer } from './canvas-renderer';
-import { blackBackground, paperSize, showInsertThisEnd } from '../store/labels';
+import { blackBackground, paperSize, showInsertThisEnd, labelTemplate, cleanBgColor, cleanTextColor } from '../store/labels';
 import {
   LABEL_WIDTH_MM,
   LABEL_HEIGHT_MM,
@@ -79,9 +79,15 @@ export async function generatePDF(pages: Page[]): Promise<void> {
         // Skip empty slots
         if (!label) continue;
 
+        // Resolve per-label config overrides
+        const effTemplate = (label.config?.labelTemplate ?? labelTemplate()) as 'original' | 'clean';
+        const effBgColor = label.config?.cleanBgColor ?? cleanBgColor();
+        const effTextColor = label.config?.cleanTextColor ?? cleanTextColor();
+        const effShowInsert = label.config?.showInsertThisEnd ?? showInsertThisEnd();
+
         // Render label to temp canvas
         const canvas = document.createElement('canvas');
-        await renderer.renderLabel(label, canvas, blackBackground(), showInsertThisEnd());
+        await renderer.renderLabel(label, canvas, blackBackground(), effShowInsert, effTemplate, effBgColor, effTextColor);
 
         // Position on PDF page (offset +1mm right, +2mm down)
         const x = LEFT_MARGIN_MM + col * TRANSLATE_WIDTH_MM + 1;

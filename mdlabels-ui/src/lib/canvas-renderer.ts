@@ -13,7 +13,6 @@ export class LabelRenderer {
   private font?: FontFace;
   private imageCache = new Map<string, HTMLImageElement>();
   private logoImage?: HTMLImageElement;
-
   async init() {
     try {
       // Load Roboto-Black font
@@ -34,7 +33,7 @@ export class LabelRenderer {
     }
   }
 
-  async renderLabel(label: Label, canvas: HTMLCanvasElement, useBlackBackground: boolean = false, showInsertThisEnd: boolean = true): Promise<void> {
+  async renderLabel(label: Label, canvas: HTMLCanvasElement, useBlackBackground: boolean = false, showInsertThisEnd: boolean = true, labelTemplate: 'original' | 'clean' = 'original', cleanBgColor: string = '#000000', cleanTextColor: string = '#ffffff'): Promise<void> {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       throw new Error('Failed to get 2D context');
@@ -48,26 +47,28 @@ export class LabelRenderer {
     ctx.fillStyle = useBlackBackground ? 'black' : 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Draw artwork (in middle section)
-    await this.drawArtwork(ctx, label);
-
-    // 2. Draw top banner (5mm black bar)
-    this.drawTopBanner(ctx, showInsertThisEnd);
-
-    // 3. Draw bottom banner (11mm black bar with text)
-    this.drawBottomBanner(ctx, label);
-
-    // 4. Draw dog-ear cutout (top-left corner)
-    this.drawDogEar(ctx, useBlackBackground);
+    if (labelTemplate === 'clean') {
+      // Clean template: no top banner, artwork at top, larger bottom banner
+      const cleanBottomBannerHeight = 16; // mm
+      await this.drawArtwork(ctx, label, 0, LABEL_HEIGHT_MM - cleanBottomBannerHeight);
+      this.drawBottomBanner(ctx, label, cleanBottomBannerHeight, cleanBgColor, cleanTextColor, 2.2, 3.5);
+      this.drawRoundedCorners(ctx, useBlackBackground);
+      this.drawDogEar(ctx, useBlackBackground);
+    } else {
+      // Original template
+      await this.drawArtwork(ctx, label);
+      this.drawTopBanner(ctx, showInsertThisEnd);
+      this.drawBottomBanner(ctx, label);
+      this.drawDogEar(ctx, useBlackBackground);
+    }
   }
 
-  private async drawArtwork(ctx: CanvasRenderingContext2D, label: Label) {
+  private async drawArtwork(ctx: CanvasRenderingContext2D, label: Label, artworkYMm?: number, artworkHeightMm?: number) {
+    const artworkY = (artworkYMm ?? TOP_BANNER_HEIGHT) * MM_TO_PX;
+    const artworkHeight = (artworkHeightMm ?? (LABEL_HEIGHT_MM - TOP_BANNER_HEIGHT - BOTTOM_BANNER_HEIGHT)) * MM_TO_PX;
+
     try {
       const img = await this.loadImage(label.artworkData);
-
-      // Artwork area: full width, between top and bottom banners
-      const artworkY = TOP_BANNER_HEIGHT * MM_TO_PX;
-      const artworkHeight = (LABEL_HEIGHT_MM - TOP_BANNER_HEIGHT - BOTTOM_BANNER_HEIGHT) * MM_TO_PX;
 
       ctx.save();
 
@@ -92,8 +93,6 @@ export class LabelRenderer {
       console.error('Failed to draw artwork:', error);
       // Draw placeholder for missing artwork
       ctx.fillStyle = '#ddd';
-      const artworkY = TOP_BANNER_HEIGHT * MM_TO_PX;
-      const artworkHeight = (LABEL_HEIGHT_MM - TOP_BANNER_HEIGHT - BOTTOM_BANNER_HEIGHT) * MM_TO_PX;
       ctx.fillRect(0, artworkY, LABEL_WIDTH_PX, artworkHeight);
     }
   }
@@ -142,16 +141,16 @@ export class LabelRenderer {
     ctx.restore();
   }
 
-  private drawBottomBanner(ctx: CanvasRenderingContext2D, label: Label) {
-    const bannerHeight = BOTTOM_BANNER_HEIGHT * MM_TO_PX;
+  private drawBottomBanner(ctx: CanvasRenderingContext2D, label: Label, bannerHeightMm?: number, bgColor: string = '#000', textColor: string = '#fff', textOffsetMm: number = 1.2, maxFontSizeMm: number = 2.8) {
+    const bannerHeight = (bannerHeightMm ?? BOTTOM_BANNER_HEIGHT) * MM_TO_PX;
     const bannerY = LABEL_HEIGHT_PX - bannerHeight;
 
-    // Black background
-    ctx.fillStyle = '#000';
+    // Banner background
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, bannerY, LABEL_WIDTH_PX, bannerHeight);
 
-    // White text (all caps, Roboto-Black)
-    ctx.fillStyle = '#fff';
+    // Text (all caps, Roboto-Black)
+    ctx.fillStyle = textColor;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
@@ -163,11 +162,11 @@ export class LabelRenderer {
     const year = label.year;
 
     // Calculate individual font sizes for album and artist
-    const albumFontSize = this.calculateOptimalFontSize(ctx, [album], maxWidth, 2.8 * MM_TO_PX, 1.5 * MM_TO_PX);
-    const artistFontSize = this.calculateOptimalFontSize(ctx, [artist], maxWidth, 2.8 * MM_TO_PX, 1.5 * MM_TO_PX);
-    const yearFontSize = 2.8 * MM_TO_PX; // Fixed size for year
+    const albumFontSize = this.calculateOptimalFontSize(ctx, [album], maxWidth, maxFontSizeMm * MM_TO_PX, 1.5 * MM_TO_PX);
+    const artistFontSize = this.calculateOptimalFontSize(ctx, [artist], maxWidth, maxFontSizeMm * MM_TO_PX, 1.5 * MM_TO_PX);
+    const yearFontSize = maxFontSizeMm * MM_TO_PX; // Fixed size for year
 
-    const startY = bannerY + 1.2 * MM_TO_PX - 5;
+    const startY = bannerY + textOffsetMm * MM_TO_PX - 5;
 
     // Draw album
     ctx.font = `${albumFontSize}px 'Roboto-Black', sans-serif`;
@@ -225,6 +224,39 @@ export class LabelRenderer {
     ctx.lineTo(size, 0); // 2.5mm to the right
     ctx.lineTo(0, size); // 2.5mm down
     ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  private drawRoundedCorners(ctx: CanvasRenderingContext2D, useBlackBackground: boolean) {
+    const r = (DOG_EAR_SIZE / 2) * MM_TO_PX; // 1.25mm radius
+
+    ctx.save();
+    ctx.fillStyle = useBlackBackground ? '#000' : '#fff';
+
+    // Top-right corner
+    ctx.beginPath();
+    ctx.moveTo(LABEL_WIDTH_PX, 0);
+    ctx.lineTo(LABEL_WIDTH_PX - r, 0);
+    ctx.arc(LABEL_WIDTH_PX - r, r, r, -Math.PI / 2, 0, false);
+    ctx.lineTo(LABEL_WIDTH_PX, 0);
+    ctx.fill();
+
+    // Bottom-left corner
+    ctx.beginPath();
+    ctx.moveTo(0, LABEL_HEIGHT_PX);
+    ctx.lineTo(0, LABEL_HEIGHT_PX - r);
+    ctx.arc(r, LABEL_HEIGHT_PX - r, r, Math.PI, Math.PI / 2, true);
+    ctx.lineTo(0, LABEL_HEIGHT_PX);
+    ctx.fill();
+
+    // Bottom-right corner
+    ctx.beginPath();
+    ctx.moveTo(LABEL_WIDTH_PX, LABEL_HEIGHT_PX);
+    ctx.lineTo(LABEL_WIDTH_PX, LABEL_HEIGHT_PX - r);
+    ctx.arc(LABEL_WIDTH_PX - r, LABEL_HEIGHT_PX - r, r, 0, Math.PI / 2, false);
+    ctx.lineTo(LABEL_WIDTH_PX, LABEL_HEIGHT_PX);
     ctx.fill();
 
     ctx.restore();

@@ -1,5 +1,5 @@
-import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd } from '../store/labels';
-import { createSignal, For } from 'solid-js';
+import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd, labelTemplate, setLabelTemplate, cleanBgColor, setCleanBgColor, cleanTextColor, setCleanTextColor } from '../store/labels';
+import { createSignal, For, Show } from 'solid-js';
 import { generatePDF } from '../lib/pdf-generator';
 import { generateCutSVG } from '../lib/svg-generator';
 
@@ -151,6 +151,22 @@ export default function GlobalControls() {
       {/* Global Configuration */}
       <div class="flex flex-wrap gap-1 md:gap-2 items-center bg-gray-200 rounded p-2">
         <span class="text-xs md:text-sm font-semibold text-gray-700 mr-2">Global Configuration:</span>
+        <select
+          value={labelTemplate()}
+          onChange={(e) => setLabelTemplate(e.currentTarget.value as 'original' | 'clean')}
+          class="px-2 md:px-3 h-6 md:h-8 text-xs md:text-base bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <option value="original">Original</option>
+          <option value="clean">Clean</option>
+        </select>
+        <select
+          value={paperSize()}
+          onChange={(e) => setPaperSize(e.currentTarget.value as 'letter' | 'a4')}
+          class="px-2 md:px-3 h-6 md:h-8 text-xs md:text-base bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <option value="letter">US Letter</option>
+          <option value="a4">A4</option>
+        </select>
         <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
           <input
             type="checkbox"
@@ -160,23 +176,42 @@ export default function GlobalControls() {
           />
           <span class="text-xs md:text-base">Black Background</span>
         </label>
-        <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
-          <input
-            type="checkbox"
-            checked={showInsertThisEnd()}
-            onChange={(e) => setShowInsertThisEnd(e.currentTarget.checked)}
-            class="w-4 h-4 cursor-pointer"
-          />
-          <span class="text-xs md:text-base">INSERT THIS END</span>
-        </label>
-        <select
-          value={paperSize()}
-          onChange={(e) => setPaperSize(e.currentTarget.value as 'letter' | 'a4')}
-          class="px-2 md:px-3 h-6 md:h-8 text-xs md:text-base bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors"
-        >
-          <option value="letter">US Letter</option>
-          <option value="a4">A4</option>
-        </select>
+      </div>
+
+      {/* Label Configuration */}
+      <div class="flex flex-wrap gap-1 md:gap-2 items-center bg-gray-200 rounded p-2">
+        <span class="text-xs md:text-sm font-semibold text-gray-700 mr-2">Label Configuration:</span>
+        <Show when={labelTemplate() === 'original'}>
+          <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
+            <input
+              type="checkbox"
+              checked={showInsertThisEnd()}
+              onChange={(e) => setShowInsertThisEnd(e.currentTarget.checked)}
+              class="w-4 h-4 cursor-pointer"
+            />
+            <span class="text-xs md:text-base">INSERT THIS END</span>
+          </label>
+        </Show>
+        <Show when={labelTemplate() === 'clean'}>
+          <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
+            <input
+              type="color"
+              value={cleanBgColor()}
+              onInput={(e) => setCleanBgColor(e.currentTarget.value)}
+              class="w-5 h-5 cursor-pointer border-0 p-0"
+            />
+            <span class="text-xs md:text-base">Background</span>
+          </label>
+          <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
+            <input
+              type="color"
+              value={cleanTextColor()}
+              onInput={(e) => setCleanTextColor(e.currentTarget.value)}
+              class="w-5 h-5 cursor-pointer border-0 p-0"
+            />
+            <span class="text-xs md:text-base">Text</span>
+          </label>
+        </Show>
       </div>
 
       {/* Page Numbers */}

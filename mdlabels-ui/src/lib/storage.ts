@@ -14,6 +14,9 @@ export interface GlobalConfig {
   blackBackground: boolean;
   showInsertThisEnd: boolean;
   paperSize: 'letter' | 'a4';
+  labelTemplate: 'original' | 'clean';
+  cleanBgColor: string;
+  cleanTextColor: string;
 }
 
 // Old label type for migration

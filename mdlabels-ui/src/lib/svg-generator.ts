@@ -9,7 +9,7 @@ import {
   COLS_PER_SHEET,
   DOG_EAR_SIZE
 } from './constants';
-import { paperSize } from '../store/labels';
+import { paperSize, labelTemplate } from '../store/labels';
 
 // Page dimensions in mm
 const PAGE_DIMENSIONS = {
@@ -31,8 +31,12 @@ export function generateCutSVG(): void {
       const x = LEFT_MARGIN_MM + col * TRANSLATE_WIDTH_MM + 1;
       const y = TOP_MARGIN_MM + row * TRANSLATE_HEIGHT_MM + 2;
 
-      // Draw label outline with dog ear cut in top-left corner for all positions
-      svgContent += drawLabelCutPath(x, y);
+      // Draw label outline with appropriate template shape
+      if (labelTemplate() === 'clean') {
+        svgContent += drawCleanLabelCutPath(x, y);
+      } else {
+        svgContent += drawLabelCutPath(x, y);
+      }
     }
   }
 
@@ -67,6 +71,28 @@ function drawLabelCutPath(x: number, y: number): string {
       L ${x + LABEL_WIDTH_MM},${y}
       L ${x + LABEL_WIDTH_MM},${y + LABEL_HEIGHT_MM}
       L ${x},${y + LABEL_HEIGHT_MM}
+      L ${x},${y + dogEar}
+      Z
+    " />
+`;
+
+  return path;
+}
+
+function drawCleanLabelCutPath(x: number, y: number): string {
+  const dogEar = DOG_EAR_SIZE;
+  const r = DOG_EAR_SIZE / 2; // 1.25mm radius matching canvas renderer
+
+  // Start from dog ear point, go clockwise with rounded corners on
+  // top-right, bottom-right, and bottom-left
+  const path = `    <path d="
+      M ${x + dogEar},${y}
+      L ${x + LABEL_WIDTH_MM - r},${y}
+      A ${r} ${r} 0 0 1 ${x + LABEL_WIDTH_MM},${y + r}
+      L ${x + LABEL_WIDTH_MM},${y + LABEL_HEIGHT_MM - r}
+      A ${r} ${r} 0 0 1 ${x + LABEL_WIDTH_MM - r},${y + LABEL_HEIGHT_MM}
+      L ${x + r},${y + LABEL_HEIGHT_MM}
+      A ${r} ${r} 0 0 1 ${x},${y + LABEL_HEIGHT_MM - r}
       L ${x},${y + dogEar}
       Z
     " />
