@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import type { Page } from '../types/label';
 import { renderer } from './canvas-renderer';
-import { blackBackground, paperSize, showInsertThisEnd, labelTemplate, cleanBgColor, cleanTextColor } from '../store/labels';
+import { blackBackground, paperSize, showInsertThisEnd, labelTemplate, cleanBgColor, cleanTextColor, oversized } from '../store/labels';
 import {
   LABEL_WIDTH_MM,
   LABEL_HEIGHT_MM,
@@ -93,12 +93,14 @@ export async function generatePDF(pages: Page[]): Promise<void> {
         const x = LEFT_MARGIN_MM + col * TRANSLATE_WIDTH_MM + 1;
         const y = TOP_MARGIN_MM + row * TRANSLATE_HEIGHT_MM + 2;
 
+        // When oversized, expand label by 1mm on each side for bleed tolerance
+        const oversize = oversized() ? 1 : 0;
         pdf.addImage(
           canvas.toDataURL('image/png'),
           'PNG',
-          x, y,
-          LABEL_WIDTH_MM,
-          LABEL_HEIGHT_MM
+          x - oversize, y - oversize,
+          LABEL_WIDTH_MM + oversize * 2,
+          LABEL_HEIGHT_MM + oversize * 2
         );
       }
     }

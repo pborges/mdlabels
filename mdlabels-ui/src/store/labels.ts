@@ -22,7 +22,8 @@ const initialConfig = loadConfigFromStorage() || {
   paperSize: 'letter' as const,
   labelTemplate: 'original' as const,
   cleanBgColor: '#000000',
-  cleanTextColor: '#ffffff'
+  cleanTextColor: '#ffffff',
+  oversized: false
 };
 
 export const [pages, setPages] = createStore<Page[]>(initialPages);
@@ -39,6 +40,7 @@ export const [showInsertThisEnd, setShowInsertThisEnd] = createSignal(initialCon
 export const [labelTemplate, setLabelTemplate] = createSignal<'original' | 'clean'>(initialConfig.labelTemplate ?? 'original');
 export const [cleanBgColor, setCleanBgColor] = createSignal(initialConfig.cleanBgColor ?? '#000000');
 export const [cleanTextColor, setCleanTextColor] = createSignal(initialConfig.cleanTextColor ?? '#ffffff');
+export const [oversized, setOversized] = createSignal(initialConfig.oversized ?? false);
 
 // Actions
 export function addPage() {
@@ -106,6 +108,7 @@ createEffect(() => {
     paperSize: paperSize(),
     labelTemplate: labelTemplate(),
     cleanBgColor: cleanBgColor(),
-    cleanTextColor: cleanTextColor()
+    cleanTextColor: cleanTextColor(),
+    oversized: oversized()
   });
 });

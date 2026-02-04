@@ -1,4 +1,4 @@
-import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd, labelTemplate, setLabelTemplate, cleanBgColor, setCleanBgColor, cleanTextColor, setCleanTextColor } from '../store/labels';
+import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd, labelTemplate, setLabelTemplate, cleanBgColor, setCleanBgColor, cleanTextColor, setCleanTextColor, oversized, setOversized } from '../store/labels';
 import { createSignal, For, Show } from 'solid-js';
 import { generatePDF } from '../lib/pdf-generator';
 import { generateCutSVG } from '../lib/svg-generator';
@@ -175,6 +175,15 @@ export default function GlobalControls() {
             class="w-4 h-4 cursor-pointer"
           />
           <span class="text-xs md:text-base">Black Background</span>
+        </label>
+        <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
+          <input
+            type="checkbox"
+            checked={oversized()}
+            onChange={(e) => setOversized(e.currentTarget.checked)}
+            class="w-4 h-4 cursor-pointer"
+          />
+          <span class="text-xs md:text-base">Slightly Oversized</span>
         </label>
       </div>
 
