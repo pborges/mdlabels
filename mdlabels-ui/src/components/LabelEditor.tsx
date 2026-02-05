@@ -568,9 +568,9 @@ export default function LabelEditor() {
                         onChange={(e) => setLabelConfigTemplate(e.currentTarget.value)}
                         class="w-full px-2 py-1 md:px-4 md:py-2 text-xs md:text-base border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">Use Global ({labelTemplate() === 'original' ? 'Original' : 'Clean'})</option>
-                        <option value="original">Original</option>
-                        <option value="clean">Clean</option>
+                        <option value="">Use Global ({labelTemplate() === 'original' ? 'Original Label' : 'Clean Label'})</option>
+                        <option value="original">Original Label</option>
+                        <option value="clean">Clean Label</option>
                       </select>
                     </div>
 

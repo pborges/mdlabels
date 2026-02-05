@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2-5-2026
+- Renamed template dropdown options to "Original Label" and "Clean Label" for clarity
+
 ## [1.2.1] - 2-5-2026
 - Moved "Clear Image" button below the label preview in the editor for better visibility
 

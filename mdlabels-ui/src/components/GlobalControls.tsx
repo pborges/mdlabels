@@ -156,8 +156,8 @@ export default function GlobalControls() {
           onChange={(e) => setLabelTemplate(e.currentTarget.value as 'original' | 'clean')}
           class="px-2 md:px-3 h-6 md:h-8 text-xs md:text-base bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors"
         >
-          <option value="original">Original</option>
-          <option value="clean">Clean</option>
+          <option value="original">Original Label</option>
+          <option value="clean">Clean Label</option>
         </select>
         <select
           value={paperSize()}
