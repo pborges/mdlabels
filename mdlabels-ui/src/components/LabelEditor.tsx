@@ -357,22 +357,20 @@ export default function LabelEditor() {
 
                   {/* Canvas preview - shown when artwork exists */}
                   <div
-                    class="relative"
-                    style={{ display: artworkData() ? 'block' : 'none' }}
+                    class="flex flex-col items-center"
+                    style={{ display: artworkData() ? 'flex' : 'none' }}
                   >
-                    {/* Clear image button */}
-                    <button
-                      onClick={clearArtwork}
-                      class="absolute -top-2 -right-2 z-10 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-md"
-                      title="Clear image"
-                    >
-                      ×
-                    </button>
                     <canvas
                       ref={previewCanvasRef}
                       class="shadow-lg bg-white"
                       style={{ width: '200px', height: 'auto' }}
                     />
+                    <button
+                      onClick={clearArtwork}
+                      class="mt-3 px-4 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Clear Image
+                    </button>
                   </div>
 
                   {/* Drop overlay when dragging */}
