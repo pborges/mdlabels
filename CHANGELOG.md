@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2-9-2026
+- Added "Credit Card Size" paper option (86mm x 54mm) for printing 2 labels side-by-side on credit-card-sized paper
+- Increased artwork zoom slider precision from 0.1 to 0.01 steps
+- Fixed label grid preview not updating when artwork zoom/pan transforms changed
+
 ## [1.2.2] - 2-5-2026
 - Renamed template dropdown options to "Original Label" and "Clean Label" for clarity
 

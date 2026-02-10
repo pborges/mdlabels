@@ -1,35 +1,24 @@
 import {
   LABEL_WIDTH_MM,
   LABEL_HEIGHT_MM,
-  LEFT_MARGIN_MM,
-  TOP_MARGIN_MM,
-  TRANSLATE_WIDTH_MM,
-  TRANSLATE_HEIGHT_MM,
-  ROWS_PER_SHEET,
-  COLS_PER_SHEET,
-  DOG_EAR_SIZE
+  DOG_EAR_SIZE,
+  PAPER_CONFIGS
 } from './constants';
 import { paperSize, labelTemplate } from '../store/labels';
 
-// Page dimensions in mm
-const PAGE_DIMENSIONS = {
-  letter: { width: 215.9, height: 279.4 },
-  a4: { width: 210, height: 297 }
-};
-
 export function generateCutSVG(): void {
-  const dimensions = PAGE_DIMENSIONS[paperSize()];
-  const PAGE_WIDTH_MM = dimensions.width;
-  const PAGE_HEIGHT_MM = dimensions.height;
+  const config = PAPER_CONFIGS[paperSize()];
+  const PAGE_WIDTH_MM = config.width;
+  const PAGE_HEIGHT_MM = config.height;
 
   let svgContent = '';
 
   // Only generate for a single page worth of labels
-  for (let row = 0; row < ROWS_PER_SHEET; row++) {
-    for (let col = 0; col < COLS_PER_SHEET; col++) {
+  for (let row = 0; row < config.rows; row++) {
+    for (let col = 0; col < config.cols; col++) {
       // Position on page (with 1mm right, 2mm down offset to match PDF)
-      const x = LEFT_MARGIN_MM + col * TRANSLATE_WIDTH_MM + 1;
-      const y = TOP_MARGIN_MM + row * TRANSLATE_HEIGHT_MM + 2;
+      const x = config.leftMargin + col * config.translateWidth + 1;
+      const y = config.topMargin + row * config.translateHeight + 2;
 
       // Draw label outline with appropriate template shape
       if (labelTemplate() === 'clean') {
@@ -40,8 +29,8 @@ export function generateCutSVG(): void {
     }
   }
 
-  // Add crosshairs
-  const crosshairs = drawCrosshairs();
+  // Add crosshairs (skip for credit card size)
+  const crosshairs = paperSize() === 'credit-card' ? '' : drawCrosshairs();
 
   // Create complete SVG
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -103,12 +92,13 @@ function drawCleanLabelCutPath(x: number, y: number): string {
 
 function drawCrosshairs(): string {
   const CROSSHAIR_LENGTH = 3; // mm
+  const config = PAPER_CONFIGS[paperSize()];
 
   // Calculate printable area bounds (no offset - crosshairs at reference points)
-  const leftX = LEFT_MARGIN_MM;
-  const rightX = LEFT_MARGIN_MM + (COLS_PER_SHEET * TRANSLATE_WIDTH_MM);
-  const topY = TOP_MARGIN_MM;
-  const bottomY = TOP_MARGIN_MM + (ROWS_PER_SHEET * TRANSLATE_HEIGHT_MM);
+  const leftX = config.leftMargin;
+  const rightX = config.leftMargin + (config.cols * config.translateWidth);
+  const topY = config.topMargin;
+  const bottomY = config.topMargin + (config.rows * config.translateHeight);
 
   let crosshairs = '';
 

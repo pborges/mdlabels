@@ -3,6 +3,7 @@ import { isEditing, closeEditor, editingLabelIndex, pages, currentPageIndex, upd
 import type { Label, LabelConfig } from '../types/label';
 import { searchMusicBrainz, getArtworkBase64 } from '../lib/api-client';
 import type { MBRelease } from '../types/api';
+import { generateUUID } from '../lib/uuid';
 import { renderer } from '../lib/canvas-renderer';
 
 // Utility to convert a File to base64 data URL
@@ -27,6 +28,7 @@ export default function LabelEditor() {
   const [hasSearched, setHasSearched] = createSignal(false);
   const [selectedRelease, setSelectedRelease] = createSignal<MBRelease | null>(null);
   const [isDragging, setIsDragging] = createSignal(false);
+  const [activeTab, setActiveTab] = createSignal<'transform' | 'config'>('transform');
 
   // Form fields for manual editing
   const [artist, setArtist] = createSignal('');
@@ -163,7 +165,7 @@ export default function LabelEditor() {
           setArtworkData(base64Data);
           // Set a custom mbid to indicate custom artwork
           if (!mbid()) {
-            setMbid('custom-' + crypto.randomUUID());
+            setMbid('custom-' + generateUUID());
           }
           console.log('Custom artwork uploaded');
         } catch (error) {
@@ -197,7 +199,7 @@ export default function LabelEditor() {
           const base64Data = await fileToBase64(file);
           setArtworkData(base64Data);
           if (!mbid()) {
-            setMbid('custom-' + crypto.randomUUID());
+            setMbid('custom-' + generateUUID());
           }
         } catch (error) {
           console.error('Failed to load image:', error);
@@ -224,7 +226,7 @@ export default function LabelEditor() {
     }
 
     // Generate mbid if not set (for custom artwork)
-    const labelMbid = mbid() || 'custom-' + crypto.randomUUID();
+    const labelMbid = mbid() || 'custom-' + generateUUID();
 
     // Build per-label config (only include fields that are set)
     const config: LabelConfig = {};
@@ -234,7 +236,7 @@ export default function LabelEditor() {
     if (labelConfigShowInsert()) config.showInsertThisEnd = labelConfigShowInsert() === 'true';
 
     const newLabel: Label = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       artist: artist(),
       album: album(),
       year: year(),
@@ -307,7 +309,7 @@ export default function LabelEditor() {
   return (
     <Show when={isEditing()}>
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
-        <div class="bg-white md:rounded-lg shadow-xl max-w-6xl w-full h-[100vh] md:h-auto md:max-h-[90vh] flex flex-col">
+        <div class="bg-white md:rounded-lg shadow-xl max-w-6xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] flex flex-col">
           <div class="flex-1 flex flex-col overflow-hidden">
             {/* Header */}
             <div class="flex justify-between items-center p-2 md:p-4 border-b">
@@ -381,8 +383,108 @@ export default function LabelEditor() {
                   </Show>
                 </div>
 
-                {/* Transform Controls */}
-                <div class="mb-3 md:mb-6 w-full px-2 md:px-6">
+                {/* Mobile Tab Box - Transform & Config */}
+                <div class="md:hidden w-full px-2 mb-3">
+                  <div class="flex border-b border-gray-300">
+                    <button
+                      class={`flex-1 py-2 text-sm font-medium ${activeTab() === 'transform' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+                      onClick={() => setActiveTab('transform')}
+                    >
+                      Artwork Transform
+                    </button>
+                    <button
+                      class={`flex-1 py-2 text-sm font-medium ${activeTab() === 'config' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+                      onClick={() => setActiveTab('config')}
+                    >
+                      Label Config
+                    </button>
+                  </div>
+                  <Show when={activeTab() === 'transform'}>
+                    <div class="pt-3 space-y-2">
+                      <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                          Zoom: {zoom().toFixed(2)}x
+                        </label>
+                        <input type="range" min="0.5" max="3" step="0.01" value={zoom()} onInput={(e) => setZoom(parseFloat(e.currentTarget.value))} class="w-full" />
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                          Pan X: {panX()}px
+                        </label>
+                        <input type="range" min="-100" max="100" value={panX()} onInput={(e) => setPanX(parseInt(e.currentTarget.value))} class="w-full" />
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                          Pan Y: {panY()}px
+                        </label>
+                        <input type="range" min="-100" max="100" value={panY()} onInput={(e) => setPanY(parseInt(e.currentTarget.value))} class="w-full" />
+                      </div>
+                    </div>
+                  </Show>
+                  <Show when={activeTab() === 'config'}>
+                    <div class="pt-3 space-y-2">
+                      <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Template</label>
+                        <select
+                          value={labelConfigTemplate()}
+                          onChange={(e) => setLabelConfigTemplate(e.currentTarget.value)}
+                          class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Use Global ({labelTemplate() === 'original' ? 'Original Label' : 'Clean Label'})</option>
+                          <option value="original">Original Label</option>
+                          <option value="clean">Clean Label</option>
+                        </select>
+                      </div>
+                      <Show when={effectiveTemplate() === 'clean'}>
+                        <div class="flex gap-2">
+                          <div class="flex-1">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Background Color</label>
+                            <div class="flex items-center gap-2">
+                              <input type="color" value={labelConfigBgColor() || cleanBgColor()} onInput={(e) => setLabelConfigBgColor(e.currentTarget.value)} class="w-8 h-8 cursor-pointer border-0 p-0" />
+                              <Show when={labelConfigBgColor()}>
+                                <button onClick={() => setLabelConfigBgColor('')} class="text-xs text-gray-500 hover:text-gray-700 underline">Use Global</button>
+                              </Show>
+                            </div>
+                          </div>
+                          <div class="flex-1">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Text Color</label>
+                            <div class="flex items-center gap-2">
+                              <input type="color" value={labelConfigTextColor() || cleanTextColor()} onInput={(e) => setLabelConfigTextColor(e.currentTarget.value)} class="w-8 h-8 cursor-pointer border-0 p-0" />
+                              <Show when={labelConfigTextColor()}>
+                                <button onClick={() => setLabelConfigTextColor('')} class="text-xs text-gray-500 hover:text-gray-700 underline">Use Global</button>
+                              </Show>
+                            </div>
+                          </div>
+                        </div>
+                      </Show>
+                      <Show when={effectiveTemplate() === 'original'}>
+                        <div>
+                          <label class="block text-xs font-medium text-gray-700 mb-1">INSERT THIS END</label>
+                          <select
+                            value={labelConfigShowInsert()}
+                            onChange={(e) => setLabelConfigShowInsert(e.currentTarget.value)}
+                            class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Use Global ({showInsertThisEnd() ? 'Shown' : 'Hidden'})</option>
+                            <option value="true">Show</option>
+                            <option value="false">Hide</option>
+                          </select>
+                        </div>
+                      </Show>
+                      <Show when={labelConfigTemplate() || labelConfigBgColor() || labelConfigTextColor() || labelConfigShowInsert()}>
+                        <button
+                          onClick={() => { setLabelConfigTemplate(''); setLabelConfigBgColor(''); setLabelConfigTextColor(''); setLabelConfigShowInsert(''); }}
+                          class="px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                        >
+                          Clear Individual Config
+                        </button>
+                      </Show>
+                    </div>
+                  </Show>
+                </div>
+
+                {/* Transform Controls (desktop only) */}
+                <div class="hidden md:block mb-3 md:mb-6 w-full px-2 md:px-6">
                   <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3">Artwork Transform</h3>
                   <div class="space-y-2 md:space-y-4">
                     <div>
@@ -393,7 +495,7 @@ export default function LabelEditor() {
                         type="range"
                         min="0.5"
                         max="3"
-                        step="0.1"
+                        step="0.01"
                         value={zoom()}
                         onInput={(e) => setZoom(parseFloat(e.currentTarget.value))}
                         class="w-full"
@@ -542,8 +644,8 @@ export default function LabelEditor() {
                   </div>
                 </div>
 
-                {/* Per-Label Configuration */}
-                <div class="mb-3 md:mb-6">
+                {/* Per-Label Configuration (desktop only - on mobile it's in the tab box) */}
+                <div class="hidden md:block mb-3 md:mb-6">
                   <div class="flex items-center justify-between mb-2 md:mb-3">
                     <h3 class="text-base md:text-lg font-semibold">Label Configuration</h3>
                     <Show when={labelConfigTemplate() || labelConfigBgColor() || labelConfigTextColor() || labelConfigShowInsert()}>

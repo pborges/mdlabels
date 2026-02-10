@@ -161,11 +161,12 @@ export default function GlobalControls() {
         </select>
         <select
           value={paperSize()}
-          onChange={(e) => setPaperSize(e.currentTarget.value as 'letter' | 'a4')}
+          onChange={(e) => setPaperSize(e.currentTarget.value as 'letter' | 'a4' | 'credit-card')}
           class="px-2 md:px-3 h-6 md:h-8 text-xs md:text-base bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors"
         >
           <option value="letter">US Letter</option>
           <option value="a4">A4</option>
+          <option value="credit-card">Credit Card Size</option>
         </select>
         <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
           <input

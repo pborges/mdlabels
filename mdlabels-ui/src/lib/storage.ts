@@ -1,4 +1,5 @@
 import type { Page, Label } from '../types/label';
+import type { PaperSize } from './constants';
 
 const STORAGE_KEY = 'mdlabels_data';
 const CONFIG_STORAGE_KEY = 'mdlabels_config';
@@ -13,7 +14,7 @@ interface StorageData {
 export interface GlobalConfig {
   blackBackground: boolean;
   showInsertThisEnd: boolean;
-  paperSize: 'letter' | 'a4';
+  paperSize: PaperSize;
   labelTemplate: 'original' | 'clean';
   cleanBgColor: string;
   cleanTextColor: string;

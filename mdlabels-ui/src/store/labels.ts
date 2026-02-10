@@ -1,13 +1,14 @@
 import { createStore } from 'solid-js/store';
 import { createSignal, createEffect } from 'solid-js';
 import type { Page, Label } from '../types/label';
-import { LABELS_PER_PAGE } from '../lib/constants';
+import { LABELS_PER_PAGE, type PaperSize } from '../lib/constants';
 import { saveToStorage, loadFromStorage, saveConfigToStorage, loadConfigFromStorage } from '../lib/storage';
+import { generateUUID } from '../lib/uuid';
 
 // Create initial empty page
 function createEmptyPage(): Page {
   return {
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     labels: Array(LABELS_PER_PAGE).fill(null)
   };
 }
@@ -35,7 +36,7 @@ export const [editingLabelIndex, setEditingLabelIndex] = createSignal<number | n
 
 // UI state
 export const [blackBackground, setBlackBackground] = createSignal(initialConfig.blackBackground);
-export const [paperSize, setPaperSize] = createSignal<'letter' | 'a4'>(initialConfig.paperSize);
+export const [paperSize, setPaperSize] = createSignal<PaperSize>(initialConfig.paperSize);
 export const [showInsertThisEnd, setShowInsertThisEnd] = createSignal(initialConfig.showInsertThisEnd);
 export const [labelTemplate, setLabelTemplate] = createSignal<'original' | 'clean'>(initialConfig.labelTemplate ?? 'original');
 export const [cleanBgColor, setCleanBgColor] = createSignal(initialConfig.cleanBgColor ?? '#000000');

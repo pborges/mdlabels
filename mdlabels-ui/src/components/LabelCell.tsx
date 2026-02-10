@@ -13,6 +13,10 @@ export default function LabelCell(props: LabelCellProps) {
 
   createEffect(async () => {
     if (canvasRef && props.label) {
+      // Access transform properties so SolidJS tracks them as dependencies
+      const _zoom = props.label.transform?.zoom;
+      const _panX = props.label.transform?.panX;
+      const _panY = props.label.transform?.panY;
       try {
         const effTemplate = (props.label.config?.labelTemplate ?? labelTemplate()) as 'original' | 'clean';
         const effBgColor = props.label.config?.cleanBgColor ?? cleanBgColor();

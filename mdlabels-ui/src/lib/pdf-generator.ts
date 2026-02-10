@@ -5,28 +5,18 @@ import { blackBackground, paperSize, showInsertThisEnd, labelTemplate, cleanBgCo
 import {
   LABEL_WIDTH_MM,
   LABEL_HEIGHT_MM,
-  LEFT_MARGIN_MM,
-  TOP_MARGIN_MM,
-  TRANSLATE_WIDTH_MM,
-  TRANSLATE_HEIGHT_MM,
-  ROWS_PER_SHEET,
-  COLS_PER_SHEET
+  PAPER_CONFIGS,
+  type PaperConfig
 } from './constants';
 
-// Page dimensions in mm
-const PAGE_DIMENSIONS = {
-  letter: { width: 215.9, height: 279.4 },
-  a4: { width: 210, height: 297 }
-};
-
-function drawCrosshairs(pdf: jsPDF): void {
+function drawCrosshairs(pdf: jsPDF, config: PaperConfig): void {
   const CROSSHAIR_LENGTH = 3; // mm
 
   // Calculate printable area bounds
-  const leftX = LEFT_MARGIN_MM;
-  const rightX = LEFT_MARGIN_MM + (COLS_PER_SHEET * TRANSLATE_WIDTH_MM);
-  const topY = TOP_MARGIN_MM;
-  const bottomY = TOP_MARGIN_MM + (ROWS_PER_SHEET * TRANSLATE_HEIGHT_MM);
+  const leftX = config.leftMargin;
+  const rightX = config.leftMargin + (config.cols * config.translateWidth);
+  const topY = config.topMargin;
+  const bottomY = config.topMargin + (config.rows * config.translateHeight);
 
   // Set line properties for crosshairs
   pdf.setLineWidth(0.1);
@@ -52,12 +42,16 @@ function drawCrosshairs(pdf: jsPDF): void {
 
 export async function generatePDF(pages: Page[]): Promise<void> {
   const format = paperSize();
-  const dimensions = PAGE_DIMENSIONS[format];
+  const config = PAPER_CONFIGS[format];
+
+  // For standard sizes use the name, for custom sizes pass [width, height]
+  const jsPDFFormat = (format === 'letter' || format === 'a4') ? format : [config.width, config.height];
+  const orientation = format === 'credit-card' ? 'landscape' : 'portrait';
 
   const pdf = new jsPDF({
-    orientation: 'portrait',
+    orientation,
     unit: 'mm',
-    format: format
+    format: jsPDFFormat as any
   });
 
   for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
@@ -68,12 +62,12 @@ export async function generatePDF(pages: Page[]): Promise<void> {
     // Fill entire page with black if black background is enabled
     if (blackBackground()) {
       pdf.setFillColor(0, 0, 0);
-      pdf.rect(0, 0, dimensions.width, dimensions.height, 'F');
+      pdf.rect(0, 0, config.width, config.height, 'F');
     }
 
-    for (let row = 0; row < ROWS_PER_SHEET; row++) {
-      for (let col = 0; col < COLS_PER_SHEET; col++) {
-        const labelIndex = row * COLS_PER_SHEET + col;
+    for (let row = 0; row < config.rows; row++) {
+      for (let col = 0; col < config.cols; col++) {
+        const labelIndex = row * config.cols + col;
         const label = page.labels[labelIndex];
 
         // Skip empty slots
@@ -89,9 +83,11 @@ export async function generatePDF(pages: Page[]): Promise<void> {
         const canvas = document.createElement('canvas');
         await renderer.renderLabel(label, canvas, blackBackground(), effShowInsert, effTemplate, effBgColor, effTextColor);
 
-        // Position on PDF page (offset +1mm right, +2mm down)
-        const x = LEFT_MARGIN_MM + col * TRANSLATE_WIDTH_MM + 1;
-        const y = TOP_MARGIN_MM + row * TRANSLATE_HEIGHT_MM + 2;
+        // Position on PDF page (offset +1mm right, +2mm down for standard sizes)
+        const xOffset = format === 'credit-card' ? 0 : 1;
+        const yOffset = format === 'credit-card' ? 0 : 2;
+        const x = config.leftMargin + col * config.translateWidth + xOffset;
+        const y = config.topMargin + row * config.translateHeight + yOffset;
 
         // When oversized, expand label by 1mm on each side for bleed tolerance
         const oversize = oversized() ? 1 : 0;
@@ -105,8 +101,10 @@ export async function generatePDF(pages: Page[]): Promise<void> {
       }
     }
 
-    // Draw crosshairs at corners of printable area
-    drawCrosshairs(pdf);
+    // Draw crosshairs at corners of printable area (skip for credit card size)
+    if (format !== 'credit-card') {
+      drawCrosshairs(pdf, config);
+    }
   }
 
   pdf.save('mdlabels.pdf');
