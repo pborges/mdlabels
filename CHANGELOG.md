@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2-9-2026
+- Migrated page storage from localStorage to IndexedDB to support importing labels with large artwork data without hitting the ~5MB localStorage quota limit
+- Existing localStorage data is automatically migrated to IndexedDB on first load
+- Added debounced auto-save (500ms) to reduce write frequency
+
 ## [1.4.0] - 2-9-2026
 - Added "Download PNG" option for high-quality 300 DPI PNG export, ideal for Canon Selphy CP1500 and similar photo printers
 - On mobile (iOS/Android), PNG opens in a new tab for easy long-press to save to Photos

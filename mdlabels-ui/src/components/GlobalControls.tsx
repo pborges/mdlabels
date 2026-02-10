@@ -1,5 +1,6 @@
 import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd, labelTemplate, setLabelTemplate, cleanBgColor, setCleanBgColor, cleanTextColor, setCleanTextColor, oversized, setOversized } from '../store/labels';
 import { createSignal, For, Show } from 'solid-js';
+import { reconcile } from 'solid-js/store';
 import { generatePDF } from '../lib/pdf-generator';
 import { generatePNG, preOpenWindows } from '../lib/png-generator';
 import { generateCutSVG } from '../lib/svg-generator';
@@ -98,7 +99,7 @@ export default function GlobalControls() {
         }
 
         if (confirm('This will replace all current pages. Continue?')) {
-          setPages(importedPages);
+          setPages(reconcile(importedPages));
         }
       } catch (error) {
         console.error('Failed to import:', error);

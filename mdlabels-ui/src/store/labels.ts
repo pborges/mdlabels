@@ -1,4 +1,4 @@
-import { createStore } from 'solid-js/store';
+import { createStore, reconcile } from 'solid-js/store';
 import { createSignal, createEffect } from 'solid-js';
 import type { Page, Label } from '../types/label';
 import { LABELS_PER_PAGE, type PaperSize } from '../lib/constants';
@@ -13,10 +13,7 @@ function createEmptyPage(): Page {
   };
 }
 
-// Initialize from localStorage or create first page
-const initialPages = loadFromStorage() || [createEmptyPage()];
-
-// Initialize config from localStorage or use defaults
+// Initialize config from localStorage or use defaults (sync, small data)
 const initialConfig = loadConfigFromStorage() || {
   blackBackground: false,
   showInsertThisEnd: true,
@@ -27,8 +24,13 @@ const initialConfig = loadConfigFromStorage() || {
   oversized: false
 };
 
-export const [pages, setPages] = createStore<Page[]>(initialPages);
+// Start with an empty page; real data loaded async via initializeStore()
+export const [pages, setPages] = createStore<Page[]>([createEmptyPage()]);
 export const [currentPageIndex, setCurrentPageIndex] = createSignal(0);
+
+// Storage readiness signal
+const [_storageReady, _setStorageReady] = createSignal(false);
+export const storageReady = _storageReady;
 
 // Editor state
 export const [isEditing, setIsEditing] = createSignal(false);
@@ -42,6 +44,15 @@ export const [labelTemplate, setLabelTemplate] = createSignal<'original' | 'clea
 export const [cleanBgColor, setCleanBgColor] = createSignal(initialConfig.cleanBgColor ?? '#000000');
 export const [cleanTextColor, setCleanTextColor] = createSignal(initialConfig.cleanTextColor ?? '#ffffff');
 export const [oversized, setOversized] = createSignal(initialConfig.oversized ?? false);
+
+// Async initialization — loads pages from IndexedDB
+export async function initializeStore(): Promise<void> {
+  const loaded = await loadFromStorage();
+  if (loaded && loaded.length > 0) {
+    setPages(reconcile(loaded));
+  }
+  _setStorageReady(true);
+}
 
 // Actions
 export function addPage() {
@@ -96,9 +107,15 @@ export function closeEditor() {
   setEditingLabelIndex(null);
 }
 
-// Auto-save to localStorage on changes
+// Auto-save to IndexedDB on changes (debounced, guarded by storageReady)
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
 createEffect(() => {
-  saveToStorage(pages);
+  const serialized = JSON.stringify(pages);
+  if (!storageReady()) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveToStorage(JSON.parse(serialized));
+  }, 500);
 });
 
 // Auto-save config to localStorage on changes

@@ -1,6 +1,6 @@
-import { onMount, createSignal } from 'solid-js';
+import { onMount, createSignal, Show } from 'solid-js';
 import { renderer } from './lib/canvas-renderer';
-import { pages, currentPageIndex } from './store/labels';
+import { pages, currentPageIndex, initializeStore, storageReady } from './store/labels';
 import LabelGrid from './components/LabelGrid';
 import GlobalControls from './components/GlobalControls';
 import LabelEditor from './components/LabelEditor';
@@ -10,8 +10,10 @@ function App() {
   const [showChangelog, setShowChangelog] = createSignal(false);
 
   onMount(async () => {
-    // Initialize the canvas renderer (load fonts)
-    await renderer.init();
+    await Promise.all([
+      renderer.init(),
+      initializeStore()
+    ]);
   });
 
   return (
@@ -25,13 +27,18 @@ function App() {
         </div>
       </header>
 
-      <GlobalControls />
+      <Show when={storageReady()} fallback={
+        <div class="flex-1 flex items-center justify-center text-gray-500">Loading...</div>
+      }>
+        <GlobalControls />
 
-      <div class="my-3 md:my-6 flex-1">
-        <LabelGrid page={pages[currentPageIndex()]} pageIndex={currentPageIndex()} />
-      </div>
+        <div class="my-3 md:my-6 flex-1">
+          <LabelGrid page={pages[currentPageIndex()]} pageIndex={currentPageIndex()} />
+        </div>
 
-      <LabelEditor />
+        <LabelEditor />
+      </Show>
+
       <ChangelogModal isOpen={showChangelog()} onClose={() => setShowChangelog(false)} />
 
       <footer class="mt-6 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
