@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2-9-2026
+- Added "Download PNG" option for high-quality 300 DPI PNG export, ideal for Canon Selphy CP1500 and similar photo printers
+- On mobile (iOS/Android), PNG opens in a new tab for easy long-press to save to Photos
+
 ## [1.3.0] - 2-9-2026
 - Added "Credit Card Size" paper option (86mm x 54mm) for printing 2 labels side-by-side on credit-card-sized paper
 - Increased artwork zoom slider precision from 0.1 to 0.01 steps

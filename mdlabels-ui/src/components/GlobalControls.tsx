@@ -1,10 +1,12 @@
 import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd, labelTemplate, setLabelTemplate, cleanBgColor, setCleanBgColor, cleanTextColor, setCleanTextColor, oversized, setOversized } from '../store/labels';
 import { createSignal, For, Show } from 'solid-js';
 import { generatePDF } from '../lib/pdf-generator';
+import { generatePNG, preOpenWindows } from '../lib/png-generator';
 import { generateCutSVG } from '../lib/svg-generator';
 
 export default function GlobalControls() {
   const [isGenerating, setIsGenerating] = createSignal(false);
+  const [isGeneratingPNG, setIsGeneratingPNG] = createSignal(false);
   let fileInputRef: HTMLInputElement | undefined;
 
   const handleClearPage = () => {
@@ -32,6 +34,21 @@ export default function GlobalControls() {
       alert('Failed to generate PDF. Please try again.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadPNG = async () => {
+    // Pre-open windows synchronously during user gesture (before async work)
+    // so iOS Safari doesn't block them
+    const windows = preOpenWindows(pages);
+    setIsGeneratingPNG(true);
+    try {
+      await generatePNG(pages, windows);
+    } catch (error) {
+      console.error('Failed to generate PNG:', error);
+      alert('Failed to generate PNG. Please try again.');
+    } finally {
+      setIsGeneratingPNG(false);
     }
   };
 
@@ -127,6 +144,13 @@ export default function GlobalControls() {
           class="px-2 py-1 md:px-4 md:py-2 text-xs md:text-base bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 transition-colors"
         >
           {isGenerating() ? 'Generating...' : 'Download PDF'}
+        </button>
+        <button
+          onClick={handleDownloadPNG}
+          disabled={isGeneratingPNG()}
+          class="px-2 py-1 md:px-4 md:py-2 text-xs md:text-base bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+        >
+          {isGeneratingPNG() ? 'Generating...' : 'Download PNG'}
         </button>
         <button
           onClick={handleDownloadSVG}
