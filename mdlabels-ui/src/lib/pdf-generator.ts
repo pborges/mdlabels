@@ -40,13 +40,30 @@ function drawCrosshairs(pdf: jsPDF, config: PaperConfig): void {
   pdf.line(rightX, bottomY - CROSSHAIR_LENGTH, rightX, bottomY + CROSSHAIR_LENGTH);
 }
 
+function rotateCanvas(src: HTMLCanvasElement, degrees: number): HTMLCanvasElement {
+  const rotated = document.createElement('canvas');
+  const rad = (degrees * Math.PI) / 180;
+  if (degrees === 90 || degrees === 270) {
+    rotated.width = src.height;
+    rotated.height = src.width;
+  } else {
+    rotated.width = src.width;
+    rotated.height = src.height;
+  }
+  const ctx = rotated.getContext('2d')!;
+  ctx.translate(rotated.width / 2, rotated.height / 2);
+  ctx.rotate(rad);
+  ctx.drawImage(src, -src.width / 2, -src.height / 2);
+  return rotated;
+}
+
 export async function generatePDF(pages: Page[]): Promise<void> {
   const format = paperSize();
   const config = PAPER_CONFIGS[format];
 
   // For standard sizes use the name, for custom sizes pass [width, height]
   const jsPDFFormat = (format === 'letter' || format === 'a4') ? format : [config.width, config.height];
-  const orientation = format === 'credit-card' ? 'landscape' : 'portrait';
+  const orientation = config.width > config.height ? 'landscape' : 'portrait' as const;
 
   const pdf = new jsPDF({
     orientation,
@@ -80,14 +97,25 @@ export async function generatePDF(pages: Page[]): Promise<void> {
         const effShowInsert = label.config?.showInsertThisEnd ?? showInsertThisEnd();
 
         // Render label to temp canvas
-        const canvas = document.createElement('canvas');
+        let canvas = document.createElement('canvas');
         await renderer.renderLabel(label, canvas, blackBackground(), effShowInsert, effTemplate, effBgColor, effTextColor);
 
+        // Rotate label if config requires it
+        if (config.labelRotation) {
+          canvas = rotateCanvas(canvas, config.labelRotation);
+        }
+
         // Position on PDF page (offset +1mm right, +2mm down for standard sizes)
-        const xOffset = format === 'credit-card' ? 0 : 1;
-        const yOffset = format === 'credit-card' ? 0 : 2;
+        const isCustomSize = format !== 'letter' && format !== 'a4';
+        const xOffset = isCustomSize ? 0 : 1;
+        const yOffset = isCustomSize ? 0 : 2;
         const x = config.leftMargin + col * config.translateWidth + xOffset;
         const y = config.topMargin + row * config.translateHeight + yOffset;
+
+        // Label dimensions on page (swapped if rotated)
+        const isRotatedSideways = config.labelRotation === 90 || config.labelRotation === 270;
+        const placedWidth = isRotatedSideways ? LABEL_HEIGHT_MM : LABEL_WIDTH_MM;
+        const placedHeight = isRotatedSideways ? LABEL_WIDTH_MM : LABEL_HEIGHT_MM;
 
         // When oversized, expand label by 1mm on each side for bleed tolerance
         const oversize = oversized() ? 1 : 0;
@@ -95,14 +123,14 @@ export async function generatePDF(pages: Page[]): Promise<void> {
           canvas.toDataURL('image/png'),
           'PNG',
           x - oversize, y - oversize,
-          LABEL_WIDTH_MM + oversize * 2,
-          LABEL_HEIGHT_MM + oversize * 2
+          placedWidth + oversize * 2,
+          placedHeight + oversize * 2
         );
       }
     }
 
-    // Draw crosshairs at corners of printable area (skip for credit card size)
-    if (format !== 'credit-card') {
+    // Draw crosshairs at corners of printable area (skip for custom sizes)
+    if (format === 'letter' || format === 'a4') {
       drawCrosshairs(pdf, config);
     }
   }

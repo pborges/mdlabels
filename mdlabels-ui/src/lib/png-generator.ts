@@ -22,7 +22,7 @@ export async function generatePNG(pages: Page[], preOpenedWindows: (Window | nul
   const format = paperSize();
   const config = PAPER_CONFIGS[format];
 
-  const isLandscape = format === 'credit-card';
+  const isLandscape = config.width > config.height;
 
   // Convert page dimensions to pixels at 300 DPI
   const pageWidthPx = Math.round(config.width * MM_TO_PX);
@@ -57,20 +57,43 @@ export async function generatePNG(pages: Page[], preOpenedWindows: (Window | nul
         const effShowInsert = label.config?.showInsertThisEnd ?? showInsertThisEnd();
 
         // Render label to temp canvas
-        const labelCanvas = document.createElement('canvas');
+        let labelCanvas = document.createElement('canvas');
         await renderer.renderLabel(label, labelCanvas, blackBackground(), effShowInsert, effTemplate, effBgColor, effTextColor);
 
+        // Rotate label if config requires it
+        if (config.labelRotation) {
+          const rad = (config.labelRotation * Math.PI) / 180;
+          const rotated = document.createElement('canvas');
+          if (config.labelRotation === 90 || config.labelRotation === 270) {
+            rotated.width = labelCanvas.height;
+            rotated.height = labelCanvas.width;
+          } else {
+            rotated.width = labelCanvas.width;
+            rotated.height = labelCanvas.height;
+          }
+          const rCtx = rotated.getContext('2d')!;
+          rCtx.translate(rotated.width / 2, rotated.height / 2);
+          rCtx.rotate(rad);
+          rCtx.drawImage(labelCanvas, -labelCanvas.width / 2, -labelCanvas.height / 2);
+          labelCanvas = rotated;
+        }
+
         // Position matching the PDF layout
-        const xOffset = format === 'credit-card' ? 0 : 1;
-        const yOffset = format === 'credit-card' ? 0 : 2;
+        const isCustomSize = format !== 'letter' && format !== 'a4';
+        const xOffset = isCustomSize ? 0 : 1;
+        const yOffset = isCustomSize ? 0 : 2;
         const xMM = config.leftMargin + col * config.translateWidth + xOffset;
         const yMM = config.topMargin + row * config.translateHeight + yOffset;
+
+        const isRotatedSideways = config.labelRotation === 90 || config.labelRotation === 270;
+        const placedWidth = isRotatedSideways ? LABEL_HEIGHT_MM : LABEL_WIDTH_MM;
+        const placedHeight = isRotatedSideways ? LABEL_WIDTH_MM : LABEL_HEIGHT_MM;
 
         const oversize = oversized() ? 1 : 0;
         const drawX = Math.round((xMM - oversize) * MM_TO_PX);
         const drawY = Math.round((yMM - oversize) * MM_TO_PX);
-        const drawW = Math.round((LABEL_WIDTH_MM + oversize * 2) * MM_TO_PX);
-        const drawH = Math.round((LABEL_HEIGHT_MM + oversize * 2) * MM_TO_PX);
+        const drawW = Math.round((placedWidth + oversize * 2) * MM_TO_PX);
+        const drawH = Math.round((placedHeight + oversize * 2) * MM_TO_PX);
 
         ctx.drawImage(labelCanvas, drawX, drawY, drawW, drawH);
       }

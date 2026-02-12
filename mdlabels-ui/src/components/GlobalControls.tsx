@@ -1,4 +1,5 @@
 import { addPage, clearPage, deletePage, currentPageIndex, setCurrentPageIndex, pages, blackBackground, setBlackBackground, paperSize, setPaperSize, setPages, showInsertThisEnd, setShowInsertThisEnd, labelTemplate, setLabelTemplate, cleanBgColor, setCleanBgColor, cleanTextColor, setCleanTextColor, oversized, setOversized } from '../store/labels';
+import type { PaperSize } from '../lib/constants';
 import { createSignal, For, Show } from 'solid-js';
 import { reconcile } from 'solid-js/store';
 import { generatePDF } from '../lib/pdf-generator';
@@ -41,10 +42,11 @@ export default function GlobalControls() {
   const handleDownloadPNG = async () => {
     // Pre-open windows synchronously during user gesture (before async work)
     // so iOS Safari doesn't block them
-    const windows = preOpenWindows(pages);
+    const currentPage = [pages[currentPageIndex()]];
+    const windows = preOpenWindows(currentPage);
     setIsGeneratingPNG(true);
     try {
-      await generatePNG(pages, windows);
+      await generatePNG(currentPage, windows);
     } catch (error) {
       console.error('Failed to generate PNG:', error);
       alert('Failed to generate PNG. Please try again.');
@@ -186,12 +188,15 @@ export default function GlobalControls() {
         </select>
         <select
           value={paperSize()}
-          onChange={(e) => setPaperSize(e.currentTarget.value as 'letter' | 'a4' | 'credit-card')}
+          onChange={(e) => setPaperSize(e.currentTarget.value as PaperSize)}
           class="px-2 md:px-3 h-6 md:h-8 text-xs md:text-base bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors"
         >
           <option value="letter">US Letter</option>
           <option value="a4">A4</option>
-          <option value="credit-card">Credit Card Size</option>
+          <option value="credit-card">Credit Card 54x86mm</option>
+          <option value="single">Single Label</option>
+          <option value="selphy">Selphy</option>
+          <option value="selphy-single">Selphy Single</option>
         </select>
         <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
           <input

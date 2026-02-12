@@ -28,7 +28,7 @@ export const TRANSLATE_WIDTH_MM = 40;
 export const TRANSLATE_HEIGHT_MM = 60;
 
 // Paper size types and configurations
-export type PaperSize = 'letter' | 'a4' | 'credit-card';
+export type PaperSize = 'letter' | 'a4' | 'credit-card' | 'single' | 'selphy' | 'selphy-single';
 
 export interface PaperConfig {
   width: number;
@@ -39,10 +39,14 @@ export interface PaperConfig {
   topMargin: number;
   translateWidth: number;
   translateHeight: number;
+  labelRotation?: number; // degrees (0 or 90)
 }
 
 export const PAPER_CONFIGS: Record<PaperSize, PaperConfig> = {
   letter: { width: 215.9, height: 279.4, rows: 4, cols: 5, leftMargin: 8, topMargin: 20, translateWidth: 40, translateHeight: 60 },
   a4:     { width: 210,   height: 297,   rows: 4, cols: 5, leftMargin: 8, topMargin: 20, translateWidth: 40, translateHeight: 60 },
-  'credit-card': { width: 86, height: 54, rows: 1, cols: 2, leftMargin: 4, topMargin: 0, translateWidth: 40, translateHeight: 54 },
+  'credit-card': { width: 86, height: 54, rows: 1, cols: 2, leftMargin: 4.5, topMargin: 0, translateWidth: 39, translateHeight: 54 },
+  single: { width: 38, height: 54, rows: 1, cols: 1, leftMargin: 0, topMargin: 0, translateWidth: 38, translateHeight: 54 },
+  selphy: { width: 90, height: 57, rows: 1, cols: 2, leftMargin: 6.5, topMargin: 1.5, translateWidth: 39, translateHeight: 54 },
+  'selphy-single': { width: 74, height: 42, rows: 1, cols: 1, leftMargin: 10, topMargin: 2, translateWidth: 54, translateHeight: 38, labelRotation: 270 },
 };

@@ -17,8 +17,12 @@ export function generateCutSVG(): void {
   for (let row = 0; row < config.rows; row++) {
     for (let col = 0; col < config.cols; col++) {
       // Position on page (with 1mm right, 2mm down offset to match PDF)
-      const x = config.leftMargin + col * config.translateWidth + 1;
-      const y = config.topMargin + row * config.translateHeight + 2;
+      const ps = paperSize();
+      const isCustomSize = ps !== 'letter' && ps !== 'a4';
+      const xOffset = isCustomSize ? 0 : 1;
+      const yOffset = isCustomSize ? 0 : 2;
+      const x = config.leftMargin + col * config.translateWidth + xOffset;
+      const y = config.topMargin + row * config.translateHeight + yOffset;
 
       // Draw label outline with appropriate template shape
       if (labelTemplate() === 'clean') {
@@ -30,7 +34,7 @@ export function generateCutSVG(): void {
   }
 
   // Add crosshairs (skip for credit card size)
-  const crosshairs = paperSize() === 'credit-card' ? '' : drawCrosshairs();
+  const crosshairs = (paperSize() === 'letter' || paperSize() === 'a4') ? drawCrosshairs() : '';
 
   // Create complete SVG
   const svg = `<?xml version="1.0" encoding="UTF-8"?>

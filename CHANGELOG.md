@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2-11-2026
+- Added "Single Label" paper size (38x54mm) for printing a single label with no margins
+- Added "Selphy" paper size (90x57mm) for printing two labels side-by-side on Canon Selphy credit-card paper
+- Added "Selphy Single" paper size (74x42mm) for printing a single rotated label on Canon Selphy paper
+- Renamed "Credit Card Size" to "Credit Card 54x86mm" and adjusted gap between labels to 1mm
+- Fixed PNG download to export only the currently selected page instead of all pages
+
 ## [1.5.0] - 2-9-2026
 - Migrated page storage from localStorage to IndexedDB to support importing labels with large artwork data without hitting the ~5MB localStorage quota limit
 - Existing localStorage data is automatically migrated to IndexedDB on first load
