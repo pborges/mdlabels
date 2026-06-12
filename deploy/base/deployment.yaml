@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mdlabels
+  labels:
+    app: mdlabels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mdlabels
+  template:
+    metadata:
+      labels:
+        app: mdlabels
+    spec:
+      containers:
+        - name: mdlabels
+          image: mdlabels:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: PORT
+              value: "80"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

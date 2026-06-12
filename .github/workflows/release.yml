@@ -167,18 +167,6 @@ jobs:
             ```
           files: release-assets/*
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [create-release]
-    steps:
-      - name: Get version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Deploy to Dokku
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: git:from-image mdlabels ghcr.io/pborges/mdlabels:${{ steps.version.outputs.VERSION }}
+  # Deployment is GitOps via the nuc-k8s tenant (ArgoCD syncs
+  # github.com/pborges/mdlabels deploy/overlays/prod into the pborges-mdlabels
+  # namespace). Bumping VERSION + deploy/overlays/prod image tag is the deploy.

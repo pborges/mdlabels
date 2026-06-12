@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ingressroute.yaml
+
+namespace: pborges-mdlabels
+
+images:
+  - name: mdlabels
+    newName: ghcr.io/pborges/mdlabels
+    newTag: "1.6.1"

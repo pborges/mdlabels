@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 6-11-2026
+- Deployment: migrated hosting from Dokku to the nuc Kubernetes cluster (pborges tenant) at mdlabels.incursion.dev; no functional changes
+
 ## [1.6.0] - 2-11-2026
 - Added "Single Label" paper size (38x54mm) for printing a single label with no margins
 - Added "Selphy" paper size (90x57mm) for printing two labels side-by-side on Canon Selphy credit-card paper

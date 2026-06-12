@@ -1,0 +1,16 @@
+# Routes the public hostname to this app's Service. Traefik dispatches by Host
+# header; k8s-infra-fqdn-operator derives the Cloudflare TunnelBinding from this
+# Host() rule (matched to the incursion.dev ClusterTunnel by zone suffix).
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mdlabels
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`mdlabels.incursion.dev`)
+      kind: Rule
+      services:
+        - name: mdlabels
+          port: 80
