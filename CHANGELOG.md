@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 7-22-2026
+- Added "4x6" paper size (100mm x 148mm) for printing 4 labels in a 2x2 grid on 4x6 photo paper
+
 ## [1.6.1] - 6-11-2026
 - Deployment: migrated hosting from Dokku to the nuc Kubernetes cluster (pborges tenant) at mdlabels.incursion.dev; no functional changes
 

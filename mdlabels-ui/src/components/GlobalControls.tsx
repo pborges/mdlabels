@@ -197,6 +197,7 @@ export default function GlobalControls() {
           <option value="single">Single Label</option>
           <option value="selphy">Selphy</option>
           <option value="selphy-single">Selphy Single</option>
+          <option value="4x6">4x6</option>
         </select>
         <label class="flex items-center gap-2 px-2 md:px-3 h-6 md:h-8 bg-white rounded cursor-pointer hover:bg-gray-50 transition-colors">
           <input

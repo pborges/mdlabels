@@ -28,7 +28,7 @@ export const TRANSLATE_WIDTH_MM = 40;
 export const TRANSLATE_HEIGHT_MM = 60;
 
 // Paper size types and configurations
-export type PaperSize = 'letter' | 'a4' | 'credit-card' | 'single' | 'selphy' | 'selphy-single';
+export type PaperSize = 'letter' | 'a4' | 'credit-card' | 'single' | 'selphy' | 'selphy-single' | '4x6';
 
 export interface PaperConfig {
   width: number;
@@ -49,4 +49,5 @@ export const PAPER_CONFIGS: Record<PaperSize, PaperConfig> = {
   single: { width: 38, height: 54, rows: 1, cols: 1, leftMargin: 0, topMargin: 0, translateWidth: 38, translateHeight: 54 },
   selphy: { width: 90, height: 57, rows: 1, cols: 2, leftMargin: 6.5, topMargin: 1.5, translateWidth: 39, translateHeight: 54 },
   'selphy-single': { width: 74, height: 42, rows: 1, cols: 1, leftMargin: 10, topMargin: 2, translateWidth: 54, translateHeight: 38, labelRotation: 270 },
+  '4x6': { width: 100, height: 148, rows: 2, cols: 2, leftMargin: 11, topMargin: 19, translateWidth: 39, translateHeight: 55 },
 };
