@@ -10,4 +10,4 @@ namespace: pborges-mdlabels
 images:
   - name: mdlabels
     newName: ghcr.io/pborges/mdlabels
-    newTag: "1.7.0"
+    newTag: "1.7.1"
