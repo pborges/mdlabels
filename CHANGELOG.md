@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 7-30-2026
+- Reduced "Slightly Oversized" bleed tolerance from 1mm per side (2mm total) to 0.5mm per side (1mm total) in PDF and PNG export
+
 ## [1.7.0] - 7-22-2026
 - Added "4x6" paper size (100mm x 148mm) for printing 4 labels in a 2x2 grid on 4x6 photo paper
 

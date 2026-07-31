@@ -89,7 +89,8 @@ export async function generatePNG(pages: Page[], preOpenedWindows: (Window | nul
         const placedWidth = isRotatedSideways ? LABEL_HEIGHT_MM : LABEL_WIDTH_MM;
         const placedHeight = isRotatedSideways ? LABEL_WIDTH_MM : LABEL_HEIGHT_MM;
 
-        const oversize = oversized() ? 1 : 0;
+        // When oversized, expand label by 0.5mm on each side (1mm total) for bleed tolerance
+        const oversize = oversized() ? 0.5 : 0;
         const drawX = Math.round((xMM - oversize) * MM_TO_PX);
         const drawY = Math.round((yMM - oversize) * MM_TO_PX);
         const drawW = Math.round((placedWidth + oversize * 2) * MM_TO_PX);

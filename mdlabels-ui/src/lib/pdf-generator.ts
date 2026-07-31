@@ -117,8 +117,8 @@ export async function generatePDF(pages: Page[]): Promise<void> {
         const placedWidth = isRotatedSideways ? LABEL_HEIGHT_MM : LABEL_WIDTH_MM;
         const placedHeight = isRotatedSideways ? LABEL_WIDTH_MM : LABEL_HEIGHT_MM;
 
-        // When oversized, expand label by 1mm on each side for bleed tolerance
-        const oversize = oversized() ? 1 : 0;
+        // When oversized, expand label by 0.5mm on each side (1mm total) for bleed tolerance
+        const oversize = oversized() ? 0.5 : 0;
         pdf.addImage(
           canvas.toDataURL('image/png'),
           'PNG',
